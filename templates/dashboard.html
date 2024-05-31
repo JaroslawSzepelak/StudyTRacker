@@ -1,0 +1,356 @@
+{% extends "base.html" %} {% block title %}Panel Użytkownika{% endblock %} {% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Witaj, {{ name }}</h1>
+        <div>
+            <button class="btn btn-primary" onclick="openTimerModal()">Rozpocznij sesję nauki</button>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">Wyloguj</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Dodaj plan nauki</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('add_plan') }}" novalidate>
+                {{ plan_form.hidden_tag() }}
+                <div class="form-group">
+                    {{ plan_form.subject.label }} {{ plan_form.subject(class_='form-control') }} {% for error in plan_form.subject.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ plan_form.planned_date.label }} {{ plan_form.planned_date(class_='form-control') }} {% for error in plan_form.planned_date.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ plan_form.submit(class_='btn btn-primary') }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Dodaj sesję nauki</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('add_session') }}" novalidate>
+                {{ study_form.hidden_tag() }}
+                <div class="form-group">
+                    {{ study_form.subject.label }} {{ study_form.subject(class_='form-control') }} {% for error in study_form.subject.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ study_form.duration.label }} {{ study_form.duration(class_='form-control') }} {% for error in study_form.duration.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ study_form.session_date.label }} {{ study_form.session_date(class_='form-control') }} {% for error in study_form.session_date.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ study_form.submit(class_='btn btn-primary') }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Dodaj osiągnięcie</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('add_achievement') }}" novalidate>
+                {{ achievement_form.hidden_tag() }}
+                <div class="form-group">
+                    {{ achievement_form.description.label }} {{ achievement_form.description(class_='form-control') }} {% for error in achievement_form.description.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ achievement_form.subject.label }} {{ achievement_form.subject(class_='form-control') }} {% for error in achievement_form.subject.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ achievement_form.achievement_date.label }} {{ achievement_form.achievement_date(class_='form-control') }} {% for error in achievement_form.achievement_date.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ achievement_form.submit(class_='btn btn-primary') }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Twoje plany nauki</h2>
+        </div>
+        <div class="card-body">
+            {% if study_plans %}
+            <ul class="list-group">
+                {% for plan in study_plans %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ plan.subject }} - {{ plan.planned_date.strftime('%d.%m.%Y') }}
+                    <form method="POST" action="{{ url_for('delete_plan', plan_id=plan.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">Brak zaplanowanych sesji nauki.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Twoje zrealizowane sesje nauki</h2>
+        </div>
+        <div class="card-body">
+            {% if study_sessions %}
+            <ul class="list-group">
+                {% for session in study_sessions %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ session.subject }} - {{ session.duration }} minut - {{ session.date.strftime('%d.%m.%Y') }}
+                    <form method="POST" action="{{ url_for('delete_session', session_id=session.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">Brak zarejestrowanych sesji nauki.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Twoje osiągnięcia</h2>
+        </div>
+        <div class="card-body">
+            {% if achievements %}
+            <ul class="list-group">
+                {% for achievement in achievements %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ achievement.subject }} - {{ achievement.description }} - {{ achievement.date.strftime('%d.%m.%Y') }}
+                    <form method="POST" action="{{ url_for('delete_achievement', achievement_id=achievement.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">Brak zarejestrowanych osiągnięć.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-4 mb-4">
+        <a href="{{ url_for('stats') }}" class="btn btn-info">Zobacz statystyki</a>
+        <button class="btn btn-success" onclick="$('#exportDetailedModal').modal('show')">Eksportuj dane</button>
+    </div>
+</div>
+
+<!-- Modal do eksportowania danych -->
+<div class="modal fade" id="exportDetailedModal" tabindex="-1" role="dialog" aria-labelledby="exportDetailedModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportDetailedModalLabel">Wybierz format eksportu szczegółowego raportu</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="exportDetailedForm" method="POST" action="{{ url_for('export_detailed_report') }}">
+                    <div class="form-group">
+                        <label for="exportDetailedFormat">Format eksportu</label>
+                        <select class="form-control" id="exportDetailedFormat" name="exportFormat">
+                            <option value="csv">CSV</option>
+                            <option value="pdf">PDF</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('exportDetailedForm').submit();">Eksportuj</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal wyswietlający się gdy nie ma danych do wyeksportowania -->
+<div class="modal fade" id="noDataModal" tabindex="-1" role="dialog" aria-labelledby="noDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noDataModalLabel">Brak danych do eksportowania</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Nie masz żadnych danych do eksportowania.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal do wprowadzania przedmiotu i śledzenia czasu nauki -->
+<div class="modal fade" id="timerModal" tabindex="-1" role="dialog" aria-labelledby="timerModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="timerModalLabel">Rozpocznij naukę</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="studySessionForm">
+                    <div class="form-group">
+                        <label for="studySubject">Przedmiot</label>
+                        <input type="text" class="form-control" id="studySubject" name="subject" required>
+                        <div class="text-danger" id="subjectError" style="display: none;">Podaj nazwę przedmiotu.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="timerDisplay">Czas trwania: <span id="timerDisplay">0:00</span> minut</label>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-primary" id="startButton" onclick="startTimer()">Start</button>
+                        <button type="button" class="btn btn-secondary" id="pauseResumeButton" style="display:none;" onclick="pauseResumeTimer()">Pauza</button>
+                        <button type="button" class="btn btn-danger" onclick="confirmEndSession()">Zakończ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal do potwierdzenia zakończenia sesji nauki -->
+<div class="modal fade" id="confirmEndModal" tabindex="-1" role="dialog" aria-labelledby="confirmEndModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmEndModalLabel">Zakończ naukę</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Czy na pewno chcesz zakończyć sesję nauki?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-danger" onclick="endSession()">Zakończ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function checkDataBeforeExport() {
+        fetch('{{ url_for("check_data") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.hasData) {
+                    $('#exportModal').modal('show');
+                } else {
+                    $('#noDataModal').modal('show');
+                }
+            });
+    }
+
+    let timer;
+    let minutes = 0;
+    let seconds = 0;
+    let isPaused = false;
+
+    function openTimerModal() {
+        $('#timerModal').modal('show');
+        document.getElementById('studySubject').value = '';
+        document.getElementById('subjectError').style.display = 'none';
+        document.getElementById('timerDisplay').innerText = '0:00';
+        document.getElementById('startButton').style.display = 'inline-block';
+        document.getElementById('pauseResumeButton').style.display = 'none';
+        minutes = 0;
+        seconds = 0;
+    }
+
+    function startTimer() {
+        const subject = document.getElementById('studySubject').value;
+        if (!subject) {
+            document.getElementById('subjectError').style.display = 'block';
+            return;
+        }
+        document.getElementById('subjectError').style.display = 'none';
+        document.getElementById('startButton').style.display = 'none';
+        document.getElementById('pauseResumeButton').style.display = 'inline-block';
+        isPaused = false;
+        timer = setInterval(() => {
+            if (!isPaused) {
+                seconds++;
+                if (seconds === 60) {
+                    seconds = 0;
+                    minutes++;
+                }
+                document.getElementById('timerDisplay').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+        }, 1000);
+    }
+
+    function pauseResumeTimer() {
+        isPaused = !isPaused;
+        document.getElementById('pauseResumeButton').innerText = isPaused ? 'Wznów' : 'Pauza';
+    }
+
+    function confirmEndSession() {
+        $('#confirmEndModal').modal('show');
+    }
+
+    function endSession() {
+        clearInterval(timer);
+        $('#timerModal').modal('hide');
+        $('#confirmEndModal').modal('hide');
+
+        const subject = document.getElementById('studySubject').value;
+        const data = {
+            subject: subject,
+            duration: minutes,
+            date: new Date().toISOString().split('T')[0]
+        };
+
+        fetch('{{ url_for("save_session") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Błąd podczas zapisywania sesji nauki');
+            }
+        });
+    }
+</script>
+
+{% endblock %}

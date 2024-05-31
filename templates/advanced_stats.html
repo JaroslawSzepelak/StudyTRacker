@@ -1,0 +1,34 @@
+{% extends "base.html" %} {% block title %}Zaawansowane Statystyki{% endblock %} {% block content %}
+<div class="container mt-5">
+    <h1>Zaawansowane Statystyki</h1>
+    <div id="plot-section" class="p-3" style="padding: 15px;">
+        <button class="btn btn-primary mb-3" onclick="generateAdvancedPlot()">Generuj wykres</button>
+        <div id="plot-container"></div>
+        <div class="pt-4" id="download-link" style="display:none;">
+            <a id="download-plot-link" href="#" class="btn btn-info">Pobierz wykres</a>
+        </div>
+    </div>
+    <div class="pb-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mt-3">Powrót do panelu głównego</a>
+    </div>
+</div>
+
+<script>
+    function generateAdvancedPlot() {
+        fetch('{{ url_for("generate_advanced_plot") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === "Wykres wygenerowany pomyślnie") {
+                    const plotContainer = document.getElementById('plot-container');
+                    plotContainer.innerHTML = `<iframe src="${data.url}" width="100%" height="600"></iframe>`;
+                    const downloadLink = document.getElementById('download-link');
+                    const downloadPlotLink = document.getElementById('download-plot-link');
+                    downloadPlotLink.href = data.url.replace('/static/', '/download_plot/');
+                    downloadLink.style.display = 'block';
+                } else {
+                    alert(data.message);
+                }
+            });
+    }
+</script>
+{% endblock %}
