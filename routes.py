@@ -13,6 +13,17 @@ from models import StudyPlan, db, User, StudySession, Achievement
 from forms import LoginForm, RegistrationForm, StudyPlanForm, StudySessionForm, AchievementForm
 import os
 
+
+class PDF(FPDF):
+    def header(self):
+        self.set_font('Arial', '', 10)
+        self.cell(0, 10, 'Raport StudyTracker', 0, 1, 'C')
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Arial', '', 8)
+        self.cell(0, 10, f'Strona {self.page_no()}', 0, 0, 'C')
+
 def init_routes(app):
     @app.route('/')
     def home():
@@ -249,9 +260,6 @@ def init_routes(app):
         static_dir = os.path.join(app.root_path, 'static')
         return send_from_directory(directory=static_dir, path=filename, as_attachment=True)
 
-
-
-
     @app.route('/export_detailed_report', methods=['POST'])
     @login_required
     def export_detailed_report():
@@ -277,13 +285,13 @@ def init_routes(app):
             cw.writerow(['Sesje Nauki'])
             cw.writerow(['Subject', 'Duration', 'Date'])
             cw.writerows([[data['Subject'], data['Duration'], data['Date']] for data in sessions_data])
-            cw.writerow([])  
+            cw.writerow([])
             
             cw.writerow(['Planowane Sesje Nauki'])
             cw.writerow(['Subject', 'Planned Date'])
             cw.writerows([[data['Subject'], data['Planned Date']] for data in plans_data])
-            cw.writerow([])
-            
+            cw.writerow([]) 
+
             cw.writerow(['Osiągnięcia'])
             cw.writerow(['Subject', 'Description', 'Date'])
             cw.writerows([[data['Subject'], data['Description'], data['Date']] for data in achievements_data])
@@ -294,9 +302,10 @@ def init_routes(app):
             return output
 
         elif format == 'pdf':
-            pdf = FPDF()
+            pdf = PDF()
             pdf.add_page()
-            pdf.set_font("Arial", size=12)
+            pdf.add_font('FreeSerif', '', 'fonts/FreeSerif.ttf', uni=True)
+            pdf.set_font('FreeSerif', '', 12)
             
             pdf.cell(200, 10, txt="Sesje Nauki", ln=True, align='C')
             pdf.ln(10)
